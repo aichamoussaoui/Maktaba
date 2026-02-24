@@ -1,4 +1,4 @@
-package com.ElOuedUniv.maktaba.presentation.screens
+package com.eloueduniv.maktaba.presentation.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.ElOuedUniv.maktaba.data.model.Book
-import com.ElOuedUniv.maktaba.presentation.viewmodel.BookViewModel
+import com.eloueduniv.maktaba.data.model.Book
+import com.eloueduniv.maktaba.presentation.viewmodel.BookViewModel
 
 /**
  * Main screen displaying the list of books
@@ -23,6 +23,8 @@ fun BookListScreen(
     viewModel: BookViewModel
 ) {
     val books by viewModel.books.collectAsState()
+    val query by viewModel.query.collectAsState()
+    val isSearching = query.isNotBlank()
     val isLoading by viewModel.isLoading.collectAsState()
 
     Scaffold(
@@ -36,25 +38,109 @@ fun BookListScreen(
             )
         }
     ) { paddingValues ->
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+
             if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                return@Box
+            }
+
+            // ✅ PAGE ALWAYS STAYS THE SAME:
+            // SearchBar + Summary + Buttons always visible
+            Column(modifier = Modifier.fillMaxSize()) {
+
+                // SearchBar always visible
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { viewModel.onQueryChange(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    label = { Text("Search by title or ISBN") },
+                    singleLine = true,
+                    trailingIcon = {
+                        if (query.isNotEmpty()) {
+                            TextButton(onClick = { viewModel.onQueryChange("") }) {
+                                Text("Clear")
+                            }
+                        }
+                    }
                 )
-            } else {
-                if (books.isEmpty()) {
-                    EmptyBooksMessage(
-                        modifier = Modifier.align(Alignment.Center)
+
+                // Summary always visible
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Total Books: ${books.size}",
+                        style = MaterialTheme.typography.titleSmall
                     )
-                } else {
-                    BookList(
-                        books = books,
-                        modifier = Modifier.fillMaxSize()
+                    Text(
+                        text = "Total Pages: ${viewModel.totalPages()}",
+                        style = MaterialTheme.typography.titleSmall
                     )
+                }
+
+                // Buttons always visible
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(onClick = { viewModel.refreshBooks() }) {
+                        Text("All Books")
+                    }
+                    Button(onClick = { viewModel.loadLongBooks() }) {
+                        Text("More than 400 pages")
+                    }
+                }
+
+                // ✅ Only the content below changes
+                when {
+                    // Search active but no results
+                    isSearching && books.isEmpty() -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "No results for \"$query\"",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = { viewModel.onQueryChange("") }) {
+                                Text("Back to all books")
+                            }
+                        }
+                    }
+
+                    // Library empty (no books at all)
+                    !isSearching && books.isEmpty() -> {
+                        EmptyBooksMessage(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(top = 40.dp)
+                        )
+                    }
+
+                    // Show list
+                    else -> {
+                        BookList(
+                            books = books,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
         }
@@ -99,9 +185,9 @@ fun BookItem(book: Book) {
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -117,7 +203,7 @@ fun BookItem(book: Book) {
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-                
+
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = "Pages:",
@@ -143,10 +229,7 @@ fun EmptyBooksMessage(modifier: Modifier = Modifier) {
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "📚",
-            style = MaterialTheme.typography.displayLarge
-        )
+        Text(text = "📚", style = MaterialTheme.typography.displayLarge)
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "No books in your library",

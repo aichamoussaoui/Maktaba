@@ -1,6 +1,5 @@
-package com.ElOuedUniv.maktaba.presentation.theme
+package com.eloueduniv.maktaba.presentation.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

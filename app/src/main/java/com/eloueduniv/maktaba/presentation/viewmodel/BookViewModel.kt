@@ -1,9 +1,9 @@
-package com.ElOuedUniv.maktaba.presentation.viewmodel
+package com.eloueduniv.maktaba.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ElOuedUniv.maktaba.data.model.Book
-import com.ElOuedUniv.maktaba.domain.usecase.GetBooksUseCase
+import com.eloueduniv.maktaba.data.model.Book
+import com.eloueduniv.maktaba.domain.usecase.GetBooksUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +24,9 @@ class BookViewModel(
     // Public immutable state for UI observation
     val books: StateFlow<List<Book>> = _books.asStateFlow()
 
+    private val _query = MutableStateFlow("")
+    val query: StateFlow<String> = _query.asStateFlow()
+
     // Loading state
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -42,6 +45,35 @@ class BookViewModel(
             try {
                 val bookList = getBooksUseCase()
                 _books.value = bookList
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // Bonus 2
+    fun totalPages(): Int {
+        return books.value.sumOf { it.nbPages }
+    }
+
+    fun loadLongBooks() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                _books.value = getBooksUseCase.getBooksMoreThan400Pages()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun onQueryChange(newQuery: String) {
+        _query.value = newQuery
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                _books.value = getBooksUseCase.searchBooks(newQuery)
             } finally {
                 _isLoading.value = false
             }

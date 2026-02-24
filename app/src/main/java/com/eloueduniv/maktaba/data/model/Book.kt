@@ -1,4 +1,4 @@
-package com.ElOuedUniv.maktaba.data.model
+package com.eloueduniv.maktaba.data.model
 
 /**
  * Book data model

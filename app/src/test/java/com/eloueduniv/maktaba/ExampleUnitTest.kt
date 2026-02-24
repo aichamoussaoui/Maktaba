@@ -1,4 +1,4 @@
-package com.ElOuedUniv.maktaba
+package com.eloueduniv.maktaba
 
 import org.junit.Test
 

@@ -1,7 +1,7 @@
-package com.ElOuedUniv.maktaba.domain.usecase
+package com.eloueduniv.maktaba.domain.usecase
 
-import com.ElOuedUniv.maktaba.data.model.Book
-import com.ElOuedUniv.maktaba.data.repository.BookRepository
+import com.eloueduniv.maktaba.data.model.Book
+import com.eloueduniv.maktaba.data.repository.BookRepository
 
 /**
  * Use Case for getting books
@@ -19,5 +19,14 @@ class GetBooksUseCase(
      */
     operator fun invoke(): List<Book> {
         return bookRepository.getAllBooks()
+    }
+
+    // Optional business logic example (filter > 400 pages)
+    fun getBooksMoreThan400Pages(): List<Book> {
+        return bookRepository.getAllBooks().filter { it.nbPages > 400 }
+    }
+
+    fun searchBooks(query: String): List<Book> {
+        return bookRepository.searchBooks(query)
     }
 }

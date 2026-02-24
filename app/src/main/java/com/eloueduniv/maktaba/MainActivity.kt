@@ -1,16 +1,14 @@
-package com.ElOuedUniv.maktaba
+package com.eloueduniv.maktaba
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
-import com.ElOuedUniv.maktaba.data.repository.BookRepository
-import com.ElOuedUniv.maktaba.domain.usecase.GetBooksUseCase
-import com.ElOuedUniv.maktaba.presentation.screens.BookListScreen
-import com.ElOuedUniv.maktaba.presentation.theme.MaktabaTheme
-import com.ElOuedUniv.maktaba.presentation.viewmodel.BookViewModel
+import com.eloueduniv.maktaba.data.repository.BookRepository
+import com.eloueduniv.maktaba.domain.usecase.GetBooksUseCase
+import com.eloueduniv.maktaba.presentation.screens.BookListScreen
+import com.eloueduniv.maktaba.presentation.theme.MaktabaTheme
+import com.eloueduniv.maktaba.presentation.viewmodel.BookViewModel
 
 /**
  * Main Activity - Entry point of the application

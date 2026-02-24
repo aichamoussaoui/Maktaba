@@ -1,4 +1,4 @@
-package com.ElOuedUniv.maktaba.presentation.theme
+package com.eloueduniv.maktaba.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
