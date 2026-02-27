@@ -29,7 +29,6 @@ class BookRepository {
         Book(isbn = "978-0-13-475759-9", title = "Refactoring", nbPages = 486),
         Book(isbn = "978-0-596-00712-6", title = "Head First Design Patterns", nbPages = 638),
 
-        // (added 5 books)
         Book(isbn = "978-0-262-03384-8", title = "Introduction to Algorithms", nbPages = 1312),
         Book(isbn = "978-0-07-802215-9", title = "Database System Concepts", nbPages = 1376),
         Book(isbn = "978-0-13-468599-1", title = "Effective Java", nbPages = 416),
