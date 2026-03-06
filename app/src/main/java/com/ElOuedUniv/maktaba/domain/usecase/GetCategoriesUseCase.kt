@@ -8,6 +8,9 @@ class GetCategoriesUseCase(
     private val categoryRepository: CategoryRepository
 ) {
     operator fun invoke(): List<Category> {
-        TODO("Not yet implemented")
+        return categoryRepository.getAllCategories()
+    }
+    fun getCategoryById(id: String): Category? {
+        return categoryRepository.getCategoryById(id)
     }
 }

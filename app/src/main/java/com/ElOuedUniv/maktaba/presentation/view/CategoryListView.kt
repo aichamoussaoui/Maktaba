@@ -74,17 +74,25 @@ fun CategoryList(
     categories: List<Category>,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(categories) { category ->
-            CategoryItem(category = category)
+    Column {
+
+        Text(
+            text = "Total Categories: ${categories.size}",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(16.dp)
+        )
+
+        LazyColumn(
+            modifier = modifier,
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(categories) { category ->
+                CategoryItem(category = category)
+            }
         }
     }
 }
-
 @Composable
 fun CategoryItem(category: Category) {
     Card(
@@ -97,9 +105,17 @@ fun CategoryItem(category: Category) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Category Item",
+                text = "${category.name} (${category.bookCount} books)",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = category.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
