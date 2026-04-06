@@ -26,15 +26,16 @@ fun BookListView(
 ) {
     val books by viewModel.books.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    
-    // TODO: Exercise 3 - Use a single delegated state from the ViewModel
-    // val uiState by viewModel.uiState.collectAsState()
 
-    if (/* TODO: uiState.isAddingBook */ false) {
+    // val uiState by viewModel.uiState.collectAsState()
+    val isAddingBook by viewModel.isAddingBook.collectAsState()
+    if (isAddingBook) {
         AddBookDialog(
-            onDismiss = { /* TODO: viewModel.onAction(BookUiAction.OnDismissAddBook) */ },
+            onDismiss = { viewModel.onAction(BookUiAction.OnDismissAddBook) },
             onConfirm = { title, isbn, pages ->
-                /* TODO: viewModel.onAction(BookUiAction.OnAddBookConfirm(title, isbn, pages)) */
+                viewModel.onAction(
+                    BookUiAction.OnAddBookConfirm(title, isbn, pages)
+                )
             }
         )
     }
@@ -58,8 +59,8 @@ fun BookListView(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { 
-                /* TODO: Exercise 3 - viewModel.onAction(BookUiAction.OnAddBookClick) */
+            FloatingActionButton(onClick = {
+                viewModel.onAction(BookUiAction.OnAddBookClick)
             }) {
                 Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.Add,

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ElOuedUniv.maktaba.data.model.Book
 import com.ElOuedUniv.maktaba.domain.usecase.GetBooksUseCase
+import com.ElOuedUniv.maktaba.domain.usecase.AddBookUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,9 +14,11 @@ import kotlinx.coroutines.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+
 @HiltViewModel
 class BookViewModel @Inject constructor(
-    private val getBooksUseCase: GetBooksUseCase
+    private val getBooksUseCase: GetBooksUseCase,
+    private val addBookUseCase: AddBookUseCase
 ) : ViewModel() {
 
     private val _books = MutableStateFlow<List<Book>>(emptyList())
@@ -23,6 +26,8 @@ class BookViewModel @Inject constructor(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private val _isAddingBook = MutableStateFlow(false)
+    val isAddingBook: StateFlow<Boolean> = _isAddingBook.asStateFlow()
 
     init {
         loadBooks()
@@ -48,19 +53,33 @@ class BookViewModel @Inject constructor(
         when (action) {
             BookUiAction.RefreshBooks -> refreshBooks()
             BookUiAction.OnAddBookClick -> {
-                // TODO: Set isAddingBook = true in your uiState
+                _isAddingBook.value = true
             }
             BookUiAction.OnDismissAddBook -> {
-                // TODO: Set isAddingBook = false
+                _isAddingBook.value = false
             }
             is BookUiAction.OnAddBookConfirm -> {
-                // TODO: Call AddBookUseCase and hide dialog
+                viewModelScope.launch {
+                    addBookUseCase(
+                        Book(
+                            title = action.title,
+                            isbn = action.isbn,
+                            nbPages = action.nbPages
+                        )
+                    )
+                }
+                _isAddingBook.value = false
             }
         }
     }
 
     fun refreshBooks() {
         loadBooks()
+    }
+    fun addBook(book: Book) {
+        val current = _books.value.toMutableList()
+        current.add(book)
+        _books.value = current
     }
 }
 

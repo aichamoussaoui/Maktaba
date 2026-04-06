@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.dagger.hilt.plugin)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -35,6 +36,9 @@ android {
     buildFeatures {
         compose = true
     }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 }
 
 dependencies {
@@ -49,6 +53,7 @@ dependencies {
     
     // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.core.ktx)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 

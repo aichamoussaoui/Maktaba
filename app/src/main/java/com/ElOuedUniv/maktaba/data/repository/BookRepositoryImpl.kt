@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 class BookRepositoryImpl @Inject constructor() : BookRepository {
 
-    private val _booksList = listOf(
+    private val _booksList = mutableListOf(
         Book(isbn = "11111", title = "Clean Code", nbPages = 10),
         Book(isbn = "22222", title = "The Pragmatic Programmer", nbPages = 0),
         Book(isbn = "33333", title = "Design Patterns", nbPages = 0),
@@ -19,7 +19,7 @@ class BookRepositoryImpl @Inject constructor() : BookRepository {
     )
 
     private val booksFlow = MutableSharedFlow<List<Book>>(replay = 1).apply {
-        tryEmit(_booksList)
+        tryEmit(_booksList.toList())
     }
     
     override fun getAllBooks(): Flow<List<Book>> = flow {
@@ -32,8 +32,7 @@ class BookRepositoryImpl @Inject constructor() : BookRepository {
     }
 
     override fun addBook(book: Book) {
-        // TODO: Exercise 2 - Implement adding a book to the list and emitting the new list
-        // Hint: This is a bit tricky with sharedFlow, think about how to update it.
+        _booksList.add(book)
+        booksFlow.tryEmit(_booksList.toList())
     }
 }
-
