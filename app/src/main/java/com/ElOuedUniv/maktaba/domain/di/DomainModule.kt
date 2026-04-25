@@ -46,4 +46,5 @@ object DomainModule {
     ): com.ElOuedUniv.maktaba.domain.usecase.GetBookByIsbnUseCase {
         return com.ElOuedUniv.maktaba.domain.usecase.GetBookByIsbnUseCase(bookRepository)
     }
+
 }
