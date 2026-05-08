@@ -6,19 +6,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ElOuedUniv.maktaba.data.model.Category
-import com.ElOuedUniv.maktaba.presentation.category.CategoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,16 +60,19 @@ fun CategoryListView(
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                if (categories.isEmpty()) {
+            when {
+                isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                categories.isEmpty() -> {
                     EmptyCategoriesMessage(
                         modifier = Modifier.align(Alignment.Center)
                     )
-                } else {
+                }
+                else -> {
                     CategoryList(
                         categories = categories,
                         modifier = Modifier.fillMaxSize()
@@ -105,7 +107,9 @@ fun CategoryItem(category: Category) {
             .height(160.dp),
         shape = MaterialTheme.shapes.extraLarge,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier
@@ -120,7 +124,7 @@ fun CategoryItem(category: Category) {
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
             ) {
                 Icon(
-                    painter = painterResource(id = category.iconRes),
+                    imageVector = Icons.Default.List,
                     contentDescription = null,
                     modifier = Modifier
                         .padding(16.dp)
@@ -163,7 +167,7 @@ fun EmptyCategoriesMessage(modifier: Modifier = Modifier) {
     ) {
         Text(
             text = "📂",
-            style = MaterialTheme.typography.displayLarge,
+            style = MaterialTheme.typography.displayLarge
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -173,7 +177,7 @@ fun EmptyCategoriesMessage(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Complete the TODO exercises in TP2",
+            text = "Add categories  in Supabase",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

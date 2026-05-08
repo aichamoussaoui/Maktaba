@@ -1,9 +1,18 @@
 package com.ElOuedUniv.maktaba.data.model
 
-data class Book(
-    val isbn: String,
-    val title: String,
-    val nbPages: Int,
-    val imageUrl: String? = null
-)
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
+data class Book(
+    @SerialName("isbn")
+    val isbn: String,
+    @SerialName("title")
+    val title: String,
+    @SerialName("nb_pages") // تم التغيير ليطابق اسم العمود الذي سنضيفه
+    val nbPages: Int,
+    @SerialName("image_url") // تم التغيير ليطابق اسم العمود في الصورة
+    val imageUrl: String? = null,
+    @SerialName("is_finished") // تم التغيير ليطابق اسم العمود الذي سنضيفه
+    val isFinished: Boolean = false
+)

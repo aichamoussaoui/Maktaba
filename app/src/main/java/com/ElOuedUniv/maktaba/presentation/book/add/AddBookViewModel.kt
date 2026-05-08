@@ -1,12 +1,14 @@
 package com.ElOuedUniv.maktaba.presentation.book.add
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.ElOuedUniv.maktaba.data.model.Book
 import com.ElOuedUniv.maktaba.domain.usecase.AddBookUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,18 +22,25 @@ class AddBookViewModel @Inject constructor(
     fun onAction(action: AddBookUiAction) {
         when (action) {
             is AddBookUiAction.OnTitleChange -> {
-                _uiState.update { it.copy(title = action.title) }
+                _uiState.update { it.copy(title = action.title, errorMessage = null) }
                 validateInputs()
             }
             is AddBookUiAction.OnIsbnChange -> {
-                _uiState.update { it.copy(isbn = action.isbn) }
+                _uiState.update { it.copy(isbn = action.isbn, errorMessage = null) }
                 validateInputs()
             }
             is AddBookUiAction.OnPagesChange -> {
-                _uiState.update { it.copy(nbPages = action.pages) }
+                _uiState.update { it.copy(nbPages = action.pages, errorMessage = null) }
                 validateInputs()
             }
+            is AddBookUiAction.OnImageSelected -> {
+                _uiState.update { it.copy(selectedImageUri = action.imageUri, errorMessage = null) }
+            }
+            is AddBookUiAction.OnImagePicked -> {
+                _uiState.update { it.copy(imageUri = action.uri, errorMessage = null) }
+            }
             AddBookUiAction.OnAddClick -> {
+                validateInputs()
                 if (_uiState.value.isFormValid) {
                     addBook()
                 }
@@ -40,33 +49,63 @@ class AddBookViewModel @Inject constructor(
     }
 
     private fun validateInputs() {
-        val title = _uiState.value.title
-        val isbn = _uiState.value.isbn
-        val nbPages = _uiState.value.nbPages
+        val current = _uiState.value
 
-        val titleError = if (title.isBlank()) "Title cannot be empty" else null
-        val isbnError = if (isbn.length != 13 || isbn.any { !it.isDigit() }) "ISBN must be 13 digits" else null
-        val pagesInt = nbPages.toIntOrNull()
-        val pagesError = if (pagesInt == null || pagesInt <= 0) "Pages must be a positive number" else null
+        val titleError = if (current.title.isBlank()) "اسم الكتاب مطلوب" else null
 
-        _uiState.update { 
+        val isbnError = when {
+            current.isbn.isBlank() -> "رقم ISBN مطلوب"
+            current.isbn.length != 10 && current.isbn.length != 13 -> "يجب أن يكون 10 أو 13 رقماً"
+            current.isbn.any { !it.isDigit() } -> "يجب إدخال أرقام فقط"
+            else -> null
+        }
+
+        val pagesInt = current.nbPages.toIntOrNull()
+        val nbPagesError = when {
+            current.nbPages.isBlank() -> "عدد الصفحات مطلوب"
+            pagesInt == null || pagesInt <= 0 -> "يجب إدخال رقم صحيح أكبر من 0"
+            else -> null
+        }
+
+        val valid = titleError == null && isbnError == null && nbPagesError == null
+        
+        android.util.Log.d("AddBookVM", "Validation: title=$titleError, isbn=$isbnError, pages=$nbPagesError, isValid=$valid")
+
+        _uiState.update {
             it.copy(
                 titleError = titleError,
                 isbnError = isbnError,
-                nbPagesError = pagesError,
-                isFormValid = titleError == null && isbnError == null && pagesError == null
+                nbPagesError = nbPagesError,
+                isFormValid = valid
             )
         }
     }
 
     private fun addBook() {
-        val currentState = _uiState.value
+        val current = _uiState.value
+        android.util.Log.d("AddBookVM", "Starting to add book: ${current.title}")
+        
         val book = Book(
-            isbn = currentState.isbn,
-            title = currentState.title,
-            nbPages = currentState.nbPages.toIntOrNull() ?: 0
+            isbn = current.isbn,
+            title = current.title,
+            nbPages = current.nbPages.toIntOrNull() ?: 0,
+            imageUrl = current.selectedImageUri
         )
-        addBookUseCase(book)
-        _uiState.update { it.copy(isSuccess = true) }
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                addBookUseCase(book, current.imageUri)
+                android.util.Log.d("AddBookVM", "Book added successfully")
+                _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+            } catch (e: Exception) {
+                android.util.Log.e("AddBookVM", "Error adding book", e)
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = e.localizedMessage ?: "فشل في إضافة الكتاب"
+                    )
+                }
+            }
+        }
     }
 }

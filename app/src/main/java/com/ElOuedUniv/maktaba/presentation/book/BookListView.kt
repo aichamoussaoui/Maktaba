@@ -1,14 +1,41 @@
 package com.ElOuedUniv.maktaba.presentation.book
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,13 +58,15 @@ fun BookListView(
     viewModel: BookViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
+    LaunchedEffect(Unit) {
+        viewModel.refreshBooks()
+    }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { 
                     Text(
-                        "MY LIBRARY", 
+                        text = "MY LIBRARY",
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.ExtraBold,
                             letterSpacing = 2.sp
@@ -46,10 +75,12 @@ fun BookListView(
                 },
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.GridView, contentDescription = "Grid View")
+                        Icon( imageVector = Icons.Default.GridView,
+                            contentDescription = "Grid View")
                     }
                     IconButton(onClick = onCategoriesClick) {
-                        Icon(Icons.Default.List, contentDescription = "Categories")
+                        Icon( imageVector = Icons.Default.List,
+                            contentDescription = "Categories")
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -61,10 +92,10 @@ fun BookListView(
             FloatingActionButton(
                 onClick = onAddBookClick,
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = androidx.compose.foundation.shape.CircleShape
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Book")
+                Icon(imageVector = Icons.Default.Add,
+                    contentDescription = "Add Book")
             }
         }
     ) { paddingValues ->
@@ -74,12 +105,27 @@ fun BookListView(
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else {
-                if (uiState.books.isEmpty()) {
-                    EmptyBooksMessage(modifier = Modifier.align(Alignment.Center))
-                } else {
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                uiState.errorMessage != null -> {
+                    ErrorBooksMessage(
+                        message = uiState.errorMessage ?: "Unknown error",
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                uiState.books.isEmpty() -> {
+                    EmptyBooksMessage(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                else -> {
                     BookGrid(
                         books = uiState.books,
                         onBookClick = onBookClick,
@@ -105,13 +151,16 @@ fun BookGrid(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(books) { book ->
-            BookCard(book = book, onClick = { onBookClick(book.isbn) })
+            BookCard(book = book,
+                onClick = { onBookClick(book.isbn) }
+            )
         }
     }
 }
 
 @Composable
-fun BookCard(book: Book, onClick: () -> Unit) {
+fun BookCard(book: Book,
+             onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -119,9 +168,12 @@ fun BookCard(book: Book, onClick: () -> Unit) {
         onClick = onClick,
         shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
             // Book Cover Image
             Box(
                 modifier = Modifier
@@ -129,7 +181,7 @@ fun BookCard(book: Book, onClick: () -> Unit) {
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.secondaryContainer)
             ) {
-                if (book.imageUrl != null) {
+                if (!book.imageUrl.isNullOrBlank()) {
                     AsyncImage(
                         model = book.imageUrl,
                         contentDescription = book.title,
@@ -179,12 +231,17 @@ fun BookCard(book: Book, onClick: () -> Unit) {
                             fontWeight = FontWeight.Medium
                         )
                     }
-                    
-                    val statusText = if (book.nbPages > 0) "Reading" else "Finished"
-                    val statusIcon = if (book.nbPages > 0) Icons.Default.Bookmark else Icons.Default.CheckCircle
-                    val statusColor = if (book.nbPages > 0) MaterialTheme.colorScheme.primary else Color(0xFF4CAF50)
 
-                    Column(horizontalAlignment = Alignment.End) {
+                    val statusText =
+                        if (book.nbPages > 0) "Reading" else "Finished"
+                    val statusIcon =
+                        if (book.nbPages > 0) Icons.Default.Bookmark else Icons.Default.CheckCircle
+                    val statusColor =
+                        if (book.nbPages > 0) MaterialTheme.colorScheme.primary else Color(0xFF4CAF50)
+
+                    Column(
+                        horizontalAlignment = Alignment.End
+                    ) {
                         Text(
                             text = "Status",
                             style = MaterialTheme.typography.labelSmall,
@@ -231,6 +288,33 @@ fun EmptyBooksMessage(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Click the + button to add a new book",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+@Composable
+fun ErrorBooksMessage(
+    message: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "⚠️",
+            style = MaterialTheme.typography.displayLarge
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Failed to load books",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.error
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = message,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
